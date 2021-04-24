@@ -256,7 +256,7 @@ void perform_measures(Conf *GC,
    fprintf(datafilep, "%.12g %.12g ", scalar_coupling, plaq);
    fprintf(datafilep, "\n");
 
-   //fflush(datafilep);
+   fflush(datafilep);
    }
 
 
