@@ -58,6 +58,10 @@ double complex plaqstaples_for_link(Conf *GC,
                                     Geometry const * const geo,
                                     long r,
                                     int i);
+double complex lorenzstaples_for_link(Conf *GC,
+                                      Geometry const * const geo,
+                                      long r,
+                                      int i);
 int metropolis_for_link(Conf *GC,
                         Geometry const * const geo,
                         GParam const * const param,
@@ -81,6 +85,9 @@ double plaquette(Conf const * const GC,
 double higgs_interaction(Conf const * const GC,
                          Geometry const * const geo,
                          GParam const * const param);
+double lorenz_gauge_violation(Conf const * const GC,
+                              Geometry const * const geo,
+                              GParam const * const param);
 void compute_flavour_observables_tensor(Conf const * const GC,
                                         GParam const * const param,
                                         double *tildeG0,

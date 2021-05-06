@@ -132,6 +132,16 @@ void readinput(char *in_file, GParam *param)
                     }
                   param->d_masssq=temp_d;
                   }
+           else if(strncmp(str, "lorenzpar", 9)==0)
+                  {
+                  err=fscanf(input, "%lf", &temp_d);
+                  if(err!=1)
+                    {
+                    fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
+                    exit(EXIT_FAILURE);
+                    }
+                  param->d_lorenzpar=temp_d;
+                  }
 
            else if(strncmp(str, "sample", 6)==0)
                   { 
@@ -396,6 +406,7 @@ void print_parameters(GParam const * const param, time_t time_start, time_t time
     fprintf(fp, "J: %.10lf\n", param->d_J);
     fprintf(fp, "K: %.10lf\n", param->d_K);
     fprintf(fp, "masssq: %.10lf\n", param->d_masssq);
+    fprintf(fp, "lorenzpar: %.10lf\n", param->d_lorenzpar);
     fprintf(fp, "\n");
 
     fprintf(fp, "sample:    %d\n", param->d_sample);

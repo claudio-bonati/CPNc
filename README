@@ -11,11 +11,13 @@ The partition function is written as Z=\sum_{theta, phi) e^{-S}
 S = - N J \sum_{x, mu>0} ( z_x^{dag} \lambda(x,\mu) z_{x+mu} +c.c.)
       - K \sum_{plaq} Re(plaq)
       - masssq \sum_{x,mu>0}Re(lambda(x,\mu))
+      + lorenzpar \sum_x |\sum_{mu>0} \Delta_{mu}\lambda_{mu}(x)|^2
 
-Note that the photon mass term explictly breaks gauge invariance
+Note that the photon mass and the Lorenz gauge terms explictly break gauge
+invariance
 
 Periodic boundary conditions in all the directions are normally used, 
-C* b.c. can be used by commenting the line
+C* b.c. can be used by uncommenting the line
  
 #define CSTAR_BC  
 
