@@ -67,6 +67,7 @@ void readinput(char *in_file, GParam *param)
 
     param->d_K=0.0;
     param->d_masssq=0.0;
+    param->d_lorenzpar=0.0;
 
     input=fopen(in_file, "r");  // open the input file
     if(input==NULL)
