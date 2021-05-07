@@ -290,33 +290,16 @@ int metropolis_for_link(Conf *GC,
   new_energy-=param->d_K*creal(new_lambda*pstaple);
   new_energy-= param->d_masssq * creal(new_lambda);
 
-  if(fabs(param->d_tgaugepar)>MIN_VALUE)
-    {
-    if(i==0)
-      {
-      old_energy+=param->d_tgaugepar*cabs(old_lambda-1.0)*cabs(old_lambda-1.0);
-      new_energy+=param->d_tgaugepar*cabs(new_lambda-1.0)*cabs(new_lambda-1.0);
-      }
-    }
-
   #ifdef DEBUG
   double old_energy_aux, new_energy_aux;
   old_energy_aux = -2.0 * (double)NFLAVOUR *(param->d_J)*higgs_interaction(GC, geo, param)*(double)STDIM * (double)param->d_volume;
   old_energy_aux -= (param->d_K)*plaquette(GC, geo, param)*(double)STDIM*((double)STDIM-1.0)/2.0 *(double) param->d_volume;
   old_energy_aux -= param->d_masssq * creal(old_lambda);
-  if(i==0)
-    {
-    old_energy_aux += param->d_tgaugepar*cabs(old_lambda-1.0)*cabs(old_lambda-1.0);
-    }
 
   GC->lambda[r][i] = new_lambda;
   new_energy_aux = -2.0 * (double)NFLAVOUR *(param->d_J)*higgs_interaction(GC, geo, param)*(double)STDIM * (double)param->d_volume;
   new_energy_aux -= (param->d_K)*plaquette(GC, geo, param)*(double)STDIM*((double)STDIM-1.0)/2.0 *(double) param->d_volume;
   new_energy_aux -= param->d_masssq * creal(new_lambda);
-  if(i==0)
-    {
-    new_energy_aux += param->d_tgaugepar*cabs(new_lambda-1.0)*cabs(new_lambda-1.0);
-    }
   GC->lambda[r][i] = old_lambda;
 
   //printf("%g %g\n", old_energy-new_energy, old_energy-new_energy -(old_energy_aux-new_energy_aux));
