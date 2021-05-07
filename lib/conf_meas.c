@@ -127,44 +127,6 @@ double higgs_interaction(Conf const * const GC,
   }
 
 
-// compute the violation of the Lorentz condition: \sum_{x} |\sum_{mu}\partial_{\mu} lambda_{\mu}|^2
-double lorenz_gauge_violation(Conf const * const GC,
-                              Geometry const * const geo,
-                              GParam const * const param)
-   {
-   long r;
-   int i;
-   double ris;
-   double complex tmp;
-
-   ris=0.0;
-   for(r=0; r<param->d_volume; r++)
-      {
-      tmp=0.0+0.0*I;
-      for(i=0; i<STDIM; i++)
-         {
-         #ifdef CSTAR_BC
-           if(bcsitep(geo, r, i)==1)
-             {
-             tmp += GC->lambda[nnp(geo, r, i)][i];
-             }
-           else
-             {
-             tmp += conj(GC->lambda[nnp(geo, r, i)][i]);
-             }
-           tmp -= GC->lambda[r][i];
-         #else
-           tmp += GC->lambda[nnp(geo, r, i)][i];
-           tmp -= GC->lambda[r][i];
-         #endif
-         }
-      ris+=cabs(tmp)*cabs(tmp);
-      }
-
-   return ris;
-   }
-
-
 // compute flavour related observables in the tensor channel
 //
 // GC->Qh needs to be initialized before calling this function

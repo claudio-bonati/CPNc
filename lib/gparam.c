@@ -67,7 +67,7 @@ void readinput(char *in_file, GParam *param)
 
     param->d_K=0.0;
     param->d_masssq=0.0;
-    param->d_lorenzpar=0.0;
+    param->d_tgaugepar=0.0;
 
     input=fopen(in_file, "r");  // open the input file
     if(input==NULL)
@@ -133,7 +133,7 @@ void readinput(char *in_file, GParam *param)
                     }
                   param->d_masssq=temp_d;
                   }
-           else if(strncmp(str, "lorenzpar", 9)==0)
+           else if(strncmp(str, "tgaugepar", 9)==0)
                   {
                   err=fscanf(input, "%lf", &temp_d);
                   if(err!=1)
@@ -141,7 +141,7 @@ void readinput(char *in_file, GParam *param)
                     fprintf(stderr, "Error in reading the file %s (%s, %d)\n", in_file, __FILE__, __LINE__);
                     exit(EXIT_FAILURE);
                     }
-                  param->d_lorenzpar=temp_d;
+                  param->d_tgaugepar=temp_d;
                   }
 
            else if(strncmp(str, "sample", 6)==0)
@@ -407,7 +407,7 @@ void print_parameters(GParam const * const param, time_t time_start, time_t time
     fprintf(fp, "J: %.10lf\n", param->d_J);
     fprintf(fp, "K: %.10lf\n", param->d_K);
     fprintf(fp, "masssq: %.10lf\n", param->d_masssq);
-    fprintf(fp, "lorenzpar: %.10lf\n", param->d_lorenzpar);
+    fprintf(fp, "tgaugepar: %.10lf\n", param->d_tgaugepar);
     fprintf(fp, "\n");
 
     fprintf(fp, "sample:    %d\n", param->d_sample);

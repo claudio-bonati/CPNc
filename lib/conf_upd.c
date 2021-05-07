@@ -240,100 +240,6 @@ double complex plaqstaples_for_link(Conf *GC,
     }
 
 
-
-// staples for the lorenz gauge term of the action
-// sum_x |\sum_i \partial_i \lamnda_{x,i}|^2 = 2 |lambda|^2 + 2*Re(conj(lambda)*lorenzstap)
-// \partial_i f(x)=f(x+i)-f(x)
-double complex lorenzstaples_for_link(Conf *GC,
-                                      Geometry const * const geo,
-                                      long r,
-                                      int i)
-  {
-  double complex ris;
-  long r1;
-  int k, j;
-
-  #ifdef CSTAR_BC
-    int sign;
-
-    ris=0.0+0.0*I;
-    // forward
-    for(k=1; k<STDIM; k++)
-       {
-       j=(i+k)%STDIM;
-       if(bcsitep(geo, r, j)==1)
-         {
-         ris-= GC->lambda[nnp(geo,r,j)][j] - GC->lambda[r][j];
-         }
-       else
-         {
-         ris-= conj(GC->lambda[nnp(geo,r,j)][j]) - GC->lambda[r][j];
-         }
-       }
-    if(bcsitep(geo, r, i)==1)
-      {
-      ris-= GC->lambda[nnp(geo,r,i)][i];
-      }
-    else
-      {
-      ris-= conj(GC->lambda[nnp(geo,r,i)][i]);
-      }
-
-    r1=nnm(geo,r,i);
-    sign=bcsitem(geo,r,i);
-    // backwar
-    for(k=1; k<STDIM; k++)
-       {
-       j=(i+k)%STDIM;
-       if(sign*bcsitep(geo,r1,j)==1)
-         {
-         ris+=GC->lambda[nnp(geo,r1,j)][j];
-         }
-       else
-         {
-         ris+=conj(GC->lambda[nnp(geo,r1,j)][j]);
-         }
-       if(sign==1)
-         {
-         ris-=GC->lambda[r1][j];
-         }
-       else
-         {
-         ris-=conj(GC->lambda[r1][j]);
-         }
-       }
-    if(sign==1)
-      {
-      ris-=GC->lambda[r1][i];
-      }
-    else
-      {
-      ris-=conj(GC->lambda[r1][i]);
-      }
-  #else
-    ris=0.0+0.0*I;
-    // forward
-    for(k=1; k<STDIM; k++)
-       {
-       j=(i+k)%STDIM;
-       ris-= GC->lambda[nnp(geo,r,j)][j] - GC->lambda[r][j];
-       }
-    ris-=GC->lambda[nnp(geo,r,i)][i];
-
-    r1=nnm(geo,r,i);
-    // backwar
-    for(k=1; k<STDIM; k++)
-       {
-       j=(i+k)%STDIM;
-       ris+= GC->lambda[nnp(geo,r1,j)][j] - GC->lambda[r1][j];
-       }
-    ris-=GC->lambda[r1][i];
-  #endif
-
-  return ris;
-  }
-
-
 // perform an update with metropolis of the link variables
 // retrn 0 if the trial state is rejected and 1 otherwise
 int metropolis_for_link(Conf *GC,
@@ -344,7 +250,7 @@ int metropolis_for_link(Conf *GC,
   {
   double old_energy, new_energy;
   double complex old_lambda, new_lambda;
-  double complex sc, pstaple, lstaple;
+  double complex sc, pstaple;
   int acc=0;
 
   Vec v1;
@@ -384,11 +290,13 @@ int metropolis_for_link(Conf *GC,
   new_energy-=param->d_K*creal(new_lambda*pstaple);
   new_energy-= param->d_masssq * creal(new_lambda);
 
-  if(fabs(param->d_lorenzpar)>MIN_VALUE)
+  if(fabs(param->d_tgaugepar)>MIN_VALUE)
     {
-    lstaple=lorenzstaples_for_link(GC, geo, r, i);
-    old_energy+=param->d_lorenzpar*(2.0*cabs(old_lambda)*cabs(old_lambda)+2.0*creal(conj(old_lambda)*lstaple));
-    new_energy+=param->d_lorenzpar*(2.0*cabs(new_lambda)*cabs(new_lambda)+2.0*creal(conj(new_lambda)*lstaple));
+    if(i==0)
+      {
+      old_energy+=param->d_tgaugepar*cabs(old_lambda-1.0)*cabs(old_lambda-1.0);
+      new_energy+=param->d_tgaugepar*cabs(new_lambda-1.0)*cabs(new_lambda-1.0);
+      }
     }
 
   #ifdef DEBUG
@@ -396,13 +304,19 @@ int metropolis_for_link(Conf *GC,
   old_energy_aux = -2.0 * (double)NFLAVOUR *(param->d_J)*higgs_interaction(GC, geo, param)*(double)STDIM * (double)param->d_volume;
   old_energy_aux -= (param->d_K)*plaquette(GC, geo, param)*(double)STDIM*((double)STDIM-1.0)/2.0 *(double) param->d_volume;
   old_energy_aux -= param->d_masssq * creal(old_lambda);
-  old_energy_aux += param->d_lorenzpar * lorenz_gauge_violation(GC, geo, param);
+  if(i==0)
+    {
+    old_energy_aux += param->d_tgaugepar*cabs(old_lambda-1.0)*cabs(old_lambda-1.0);
+    }
 
   GC->lambda[r][i] = new_lambda;
   new_energy_aux = -2.0 * (double)NFLAVOUR *(param->d_J)*higgs_interaction(GC, geo, param)*(double)STDIM * (double)param->d_volume;
   new_energy_aux -= (param->d_K)*plaquette(GC, geo, param)*(double)STDIM*((double)STDIM-1.0)/2.0 *(double) param->d_volume;
   new_energy_aux -= param->d_masssq * creal(new_lambda);
-  new_energy_aux += param->d_lorenzpar * lorenz_gauge_violation(GC, geo, param);
+  if(i==0)
+    {
+    new_energy_aux += param->d_tgaugepar*cabs(new_lambda-1.0)*cabs(new_lambda-1.0);
+    }
   GC->lambda[r][i] = old_lambda;
 
   //printf("%g %g\n", old_energy-new_energy, old_energy-new_energy -(old_energy_aux-new_energy_aux));
