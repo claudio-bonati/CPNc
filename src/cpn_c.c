@@ -181,6 +181,7 @@ int main (int argc, char **argv)
       printf("Usage: %s input_file\n\n", argv[0]);
 
       printf("Compilation details:\n");
+      printf("\tCHARGE: %d\n", CHARGE);
       printf("\tN_f (number of flavours): %d\n", NFLAVOUR);
       printf("\tST_dim (space-time dimensionality): %d\n", STDIM);
       printf("\n");

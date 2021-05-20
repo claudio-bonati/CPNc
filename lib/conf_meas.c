@@ -112,7 +112,7 @@ double higgs_interaction(Conf const * const GC,
         #else
           equal_Vec(&v1, &(GC->phi[nnp(geo, r, i)]));
         #endif
-        times_equal_complex_Vec(&v1, GC->lambda[r][i] );
+        times_equal_complex_Vec(&v1, chargepow(GC->lambda[r][i]) );
 
         aux+= creal(scal_prod_Vec(&(GC->phi[r]), &v1) );
         }

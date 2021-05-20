@@ -38,8 +38,7 @@ void calcstaples_for_phi(Conf *GC,
      #else
        equal_Vec(&v1, &(GC->phi[nnp(geo, r, i)]) );
      #endif
-
-     times_equal_complex_Vec(&v1, GC->lambda[r][i]);
+     times_equal_complex_Vec(&v1, chargepow(GC->lambda[r][i]));
      plus_equal_Vec(staple, &v1);
 
      // backward
@@ -47,16 +46,16 @@ void calcstaples_for_phi(Conf *GC,
        if(bcsitem(geo, r, i)==1)
          {
          equal_Vec(&v2, &(GC->phi[nnm(geo, r, i)]) );
-         times_equal_complex_Vec(&v2, conj(GC->lambda[nnm(geo, r, i)][i]));
+         times_equal_complex_Vec(&v2, chargepow(conj(GC->lambda[nnm(geo, r, i)][i])));
          }
        else
          {
          equal_cc_Vec(&v2, &(GC->phi[nnm(geo, r, i)]) );
-         times_equal_complex_Vec(&v2, GC->lambda[nnm(geo, r, i)][i]);
+         times_equal_complex_Vec(&v2, chargepow(GC->lambda[nnm(geo, r, i)][i]));
          }
      #else
        equal_Vec(&v2, &(GC->phi[nnm(geo, r, i)]) );
-       times_equal_complex_Vec(&v2, conj(GC->lambda[nnm(geo, r, i)][i]));
+       times_equal_complex_Vec(&v2, chargepow(conj(GC->lambda[nnm(geo, r, i)][i])));
      #endif
 
      plus_equal_Vec(staple, &v2);
@@ -281,12 +280,12 @@ int metropolis_for_link(Conf *GC,
     pstaple=0.0;
     }
 
-  old_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*old_lambda );
+  old_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(old_lambda) );
   old_energy-=param->d_K*creal(old_lambda*pstaple);
   old_energy-= param->d_masssq * creal(old_lambda);
   new_lambda = old_lambda*cexp(I*param->d_epsilon_metro_link*(2.0*casuale()-1));
 
-  new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*new_lambda );
+  new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(new_lambda) );
   new_energy-=param->d_K*creal(new_lambda*pstaple);
   new_energy-= param->d_masssq * creal(new_lambda);
 

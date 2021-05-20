@@ -383,6 +383,7 @@ void print_parameters(GParam const * const param, time_t time_start, time_t time
 
     fprintf(fp,"\n");
 
+    fprintf(fp, "CHARGE: %d\n", CHARGE);
     fprintf(fp, "number of flavours: %d\n", NFLAVOUR);
     fprintf(fp, "spacetime dimensionality: %d\n\n", STDIM);
 

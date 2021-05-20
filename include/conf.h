@@ -12,7 +12,6 @@
 #include"geometry.h"
 #include"vec.h"
 
-
 typedef struct Conf {
   long update_index;
 
@@ -22,6 +21,28 @@ typedef struct Conf {
   FMatrix *Qh;                // [volume]
   } Conf;
 
+inline double complex chargepow(double complex x)
+  {
+  int i;
+  double complex ris=1.0+0.0*I;
+
+  if(CHARGE>=0)
+    {
+    for(i=0;i<CHARGE; i++)
+       {
+       ris*=x;
+       }
+    }
+  else
+    {
+    for(i=0;i<(-CHARGE); i++)
+       {
+       ris*=x;
+       }
+    }
+
+  return ris;
+  }
 
 // in conf_def.c
 void init_conf(Conf *GC,
