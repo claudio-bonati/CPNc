@@ -102,6 +102,8 @@ double plaquette(Conf const * const GC,
 double higgs_interaction(Conf const * const GC,
                          Geometry const * const geo,
                          GParam const * const param);
+double realpartlink(Conf const * const GC,
+                    GParam const * const param);
 void compute_flavour_observables_tensor(Conf const * const GC,
                                         GParam const * const param,
                                         double *tildeG0,

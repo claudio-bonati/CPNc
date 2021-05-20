@@ -127,6 +127,29 @@ double higgs_interaction(Conf const * const GC,
   }
 
 
+// return the average of Re(link)
+double realpartlink(Conf const * const GC,
+                    GParam const * const param)
+  {
+  int i;
+  long r;
+  double ris=0.0;
+
+  for(i=0; i<STDIM; i++)
+     {
+     for(r=0; r<param->d_volume; r++)
+        {
+        ris+=creal(GC->lambda[r][i]);
+        }
+     }
+
+  ris*=param->d_inv_vol;
+  ris/=((double) STDIM);
+
+  return ris;
+  }
+
+
 // compute flavour related observables in the tensor channel
 //
 // GC->Qh needs to be initialized before calling this function
@@ -231,7 +254,7 @@ void perform_measures(Conf *GC,
 
    double tildeG0_t, tildeGminp_t;
    double tildeG0_v, tildeGminp_v;
-   double scalar_coupling, plaq;
+   double scalar_coupling, plaq, relink;
 
    for(r=0; r<(param->d_volume); r++)
       {
@@ -250,10 +273,12 @@ void perform_measures(Conf *GC,
 
    scalar_coupling=higgs_interaction(GC, geo, param);
    plaq=plaquette(GC, geo, param);
+   relink=realpartlink(GC, param);
 
    fprintf(datafilep, "%.12g %.12g ", tildeG0_t, tildeGminp_t);
    fprintf(datafilep, "%.12g %.12g ", tildeG0_v, tildeGminp_v);
    fprintf(datafilep, "%.12g %.12g ", scalar_coupling, plaq);
+   fprintf(datafilep, "%.12g ", relink);
    fprintf(datafilep, "\n");
 
    fflush(datafilep);
