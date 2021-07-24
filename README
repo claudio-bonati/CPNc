@@ -9,7 +9,7 @@
 The partition function is written as Z=\sum_{theta, phi) e^{-S}
 
 S = - N J \sum_{x, mu>0} ( z_x^{dag} [\lambda(x,\mu)]^(CHARGE) z_{x+mu} + c.c.)
-      - K \sum_{plaq} Re(plaq)
+      - 2*K \sum_{plaq} Re(plaq)
       - masssq \sum_{x,mu>0}Re(lambda(x,\mu))
 
 CHARGE is a macro defined in include/macro.h
