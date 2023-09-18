@@ -285,6 +285,10 @@ int metropolis_for_link(Conf *GC,
   old_energy-= param->d_masssq * creal(old_lambda);
   new_lambda = old_lambda*cexp(I*param->d_epsilon_metro_link*(2.0*casuale()-1));
 
+  // needed when the scalar coupling is very large
+  int help=(int)(CHARGE*casuale());
+  new_lambda = old_lambda*cexp(I*PI2/CHARGE*(double)help);
+
   new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(new_lambda) );
   new_energy-=2.0*param->d_K*creal(new_lambda*pstaple);
   new_energy-= param->d_masssq * creal(new_lambda);
