@@ -285,10 +285,6 @@ int metropolis_for_link(Conf *GC,
   old_energy-= param->d_masssq * creal(old_lambda);
   new_lambda = old_lambda*cexp(I*param->d_epsilon_metro_link*(2.0*casuale()-1));
 
-  // needed when the scalar coupling is very large
-  int help=(int)(CHARGE*casuale());
-  new_lambda = old_lambda*cexp(I*PI2/CHARGE*(double)help);
-
   new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(new_lambda) );
   new_energy-=2.0*param->d_K*creal(new_lambda*pstaple);
   new_energy-= param->d_masssq * creal(new_lambda);
@@ -328,19 +324,118 @@ int metropolis_for_link(Conf *GC,
   }
 
 
+// perform a discrete update with metropolis of the link variables
+// retrn 0 if the trial state is rejected and 1 otherwise
+int metropolis_for_link_big(Conf *GC,
+                        Geometry const * const geo,
+                        GParam const * const param,
+                        long r,
+                        int i)
+  {
+  #if CHARGE == 1 // if CHARGE==1 the move is trivial
+    (void) GC;
+    (void) geo;
+    (void) param;
+    (void) r;
+    (void) i;
+
+    int acc=1;
+  #else
+  double old_energy, new_energy;
+  double complex old_lambda, new_lambda;
+  double complex sc, pstaple;
+  int acc=0, tmp;
+
+  Vec v1;
+
+  #ifdef CSTAR_BC
+    if(bcsitep(geo, r, i)==1)
+      {
+      equal_Vec(&v1, &(GC->phi[nnp(geo,r,i)]));
+      }
+    else
+      {
+      equal_cc_Vec(&v1, &(GC->phi[nnp(geo,r,i)]));
+      }
+  #else
+    equal_Vec(&v1, &(GC->phi[nnp(geo,r,i)]));
+  #endif
+
+  sc=scal_prod_Vec(&(GC->phi[r]), &v1);
+
+  old_lambda=GC->lambda[r][i];
+
+  if(fabs(param->d_K)>MIN_VALUE)
+    {
+    pstaple=plaqstaples_for_link(GC, geo, r, i);
+    }
+  else
+    {
+    pstaple=0.0;
+    }
+
+  old_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(old_lambda) );
+  old_energy-=2.0*param->d_K*creal(old_lambda*pstaple);
+  old_energy-= param->d_masssq * creal(old_lambda);
+
+  tmp=1+(int)((CHARGE-1)*casuale());
+  new_lambda = old_lambda*cexp(I*PI2/CHARGE*(double)tmp);
+
+  new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(new_lambda) );
+  new_energy-=2.0*param->d_K*creal(new_lambda*pstaple);
+  new_energy-= param->d_masssq * creal(new_lambda);
+
+  #ifdef DEBUG
+  double old_energy_aux, new_energy_aux;
+  old_energy_aux = -2.0 * (double)NFLAVOUR *(param->d_J)*higgs_interaction(GC, geo, param)*(double)STDIM * (double)param->d_volume;
+  old_energy_aux -= 2.0 * (param->d_K)*plaquette(GC, geo, param)*(double)STDIM*((double)STDIM-1.0)/2.0 *(double) param->d_volume;
+  old_energy_aux -= param->d_masssq * creal(old_lambda);
+
+  GC->lambda[r][i] = new_lambda;
+  new_energy_aux = -2.0 * (double)NFLAVOUR *(param->d_J)*higgs_interaction(GC, geo, param)*(double)STDIM * (double)param->d_volume;
+  new_energy_aux -= 2.0 * (param->d_K)*plaquette(GC, geo, param)*(double)STDIM*((double)STDIM-1.0)/2.0 *(double) param->d_volume;
+  new_energy_aux -= param->d_masssq * creal(new_lambda);
+  GC->lambda[r][i] = old_lambda;
+
+  //printf("%g %g\n", old_energy-new_energy, old_energy-new_energy -(old_energy_aux-new_energy_aux));
+  if(fabs(old_energy-new_energy -(old_energy_aux-new_energy_aux))>1.0e-10 )
+    {
+    fprintf(stderr, "Problem in energy in metropolis for link (%s, %d)\n", __FILE__, __LINE__);
+    exit(EXIT_FAILURE);
+    }
+  #endif
+
+  if(old_energy>new_energy)
+    {
+    GC->lambda[r][i] = new_lambda;
+    acc=1;
+    }
+  else if(casuale()< exp(old_energy-new_energy) )
+         {
+         GC->lambda[r][i] = new_lambda;
+         acc=1;
+         }
+  #endif
+  return acc;
+  }
+
+
 // perform a complete update
 void update(Conf * GC,
             Geometry const * const geo,
             GParam const * const param,
             double *acc_site,
-            double *acc_link)
+            double *acc_link,
+            double *acc_link_big)
+
    {
-   long r, asum_site, asum_link;
+   long r, asum_site, asum_link, asum_link_big;
    int j, dir;
    double complex norm;
 
    // metropolis on links
    asum_link=0;
+   asum_link_big=0;
    #ifndef LINKS_FIXED_TO_ONE
      #ifndef TEMPORAL_GAUGE
      for(r=0; r<param->d_volume; r++)
@@ -348,6 +443,7 @@ void update(Conf * GC,
         for(dir=0; dir<STDIM; dir++)
            {
            asum_link+=metropolis_for_link(GC, geo, param, r, dir);
+           asum_link_big+=metropolis_for_link_big(GC, geo, param, r, dir);
            }
         }
      #else
@@ -356,16 +452,20 @@ void update(Conf * GC,
         for(dir=1; dir<STDIM; dir++)
            {
            asum_link+=metropolis_for_link(GC, geo, param, r, dir);
+           asum_link_big+=metropolis_for_link_big(GC, geo, param, r, dir);
            }
         }
      #endif
    #endif
    *acc_link=((double)asum_link)*param->d_inv_vol;
+   *acc_link_big=((double)asum_link_big)*param->d_inv_vol;
 
    #ifndef TEMPORAL_GAUGE
    *acc_link/=(double)STDIM;
+   *acc_link_big/=(double)STDIM;
    #else
    *acc_link/=(double)(STDIM-1);
+   *acc_link_big/=(double)(STDIM-1);
    #endif
 
    // metropolis on phi
