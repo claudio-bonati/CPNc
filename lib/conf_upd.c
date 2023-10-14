@@ -378,7 +378,7 @@ int metropolis_for_link_big(Conf *GC,
   old_energy-=2.0*param->d_K*creal(old_lambda*pstaple);
   old_energy-= param->d_masssq * creal(old_lambda);
 
-  tmp=1+(int)((CHARGE-1)*casuale());
+  tmp=(int)(CHARGE*casuale());
   new_lambda = old_lambda*cexp(I*PI2/CHARGE*(double)tmp);
 
   new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(new_lambda) );
