@@ -253,8 +253,9 @@ void perform_measures(Conf *GC,
    long r;
 
    double tildeG0_t, tildeGminp_t;
-   double tildeG0_v, tildeGminp_v;
-   double scalar_coupling, plaq, relink;
+   //double tildeG0_v, tildeGminp_v;
+   double scalar_coupling, plaq;
+   //double relink;
 
    for(r=0; r<(param->d_volume); r++)
       {
@@ -266,19 +267,19 @@ void perform_measures(Conf *GC,
                                       &tildeG0_t,
                                       &tildeGminp_t);
 
-   compute_flavour_observables_vector(GC,
-                                      param,
-                                      &tildeG0_v,
-                                      &tildeGminp_v);
+   //compute_flavour_observables_vector(GC,
+   //                                   param,
+   //                                   &tildeG0_v,
+   //                                   &tildeGminp_v);
 
    scalar_coupling=higgs_interaction(GC, geo, param);
    plaq=plaquette(GC, geo, param);
-   relink=realpartlink(GC, param);
+   //relink=realpartlink(GC, param);
 
    fprintf(datafilep, "%.12g %.12g ", tildeG0_t, tildeGminp_t);
-   fprintf(datafilep, "%.12g %.12g ", tildeG0_v, tildeGminp_v);
+   //fprintf(datafilep, "%.12g %.12g ", tildeG0_v, tildeGminp_v);
    fprintf(datafilep, "%.12g %.12g ", scalar_coupling, plaq);
-   fprintf(datafilep, "%.12g ", relink);
+   //fprintf(datafilep, "%.12g ", relink);
    fprintf(datafilep, "\n");
 
    fflush(datafilep);

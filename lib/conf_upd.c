@@ -324,6 +324,7 @@ int metropolis_for_link(Conf *GC,
   }
 
 
+
 // perform a discrete update with metropolis of the link variables
 // retrn 0 if the trial state is rejected and 1 otherwise
 int metropolis_for_link_big(Conf *GC,
@@ -420,6 +421,82 @@ int metropolis_for_link_big(Conf *GC,
   }
 
 
+// perform an update with microcanonical update of the link variables
+void overrelaxation_for_link(Conf *GC,
+                             Geometry const * const geo,
+                             GParam const * const param,
+                             long r,
+                             int i)
+  {
+  #if CHARGE != 1 
+    fprintf(stderr, "Using overrelaxation for link with charge!=1 (%s, %d)\n", __FILE__, __LINE__);
+    exit(EXIT_FAILURE);
+  #endif 
+
+  double complex old_lambda, new_lambda;
+  double complex sc, pstaple, staple;
+  Vec v1;
+
+  old_lambda=GC->lambda[r][i];
+
+  #ifdef CSTAR_BC
+    if(bcsitep(geo, r, i)==1)
+      {
+      equal_Vec(&v1, &(GC->phi[nnp(geo,r,i)]));
+      }
+    else
+      {
+      equal_cc_Vec(&v1, &(GC->phi[nnp(geo,r,i)]));
+      }
+  #else
+    equal_Vec(&v1, &(GC->phi[nnp(geo,r,i)]));
+  #endif
+
+  sc=scal_prod_Vec(&(GC->phi[r]), &v1);
+
+  if(fabs(param->d_K)>MIN_VALUE)
+    {
+    pstaple=plaqstaples_for_link(GC, geo, r, i);
+    }
+  else
+    {
+    pstaple=0.0;
+    }
+
+  staple= -2.0*(double complex)NFLAVOUR*(param->d_J)*sc - (double complex)param->d_masssq -2.0*param->d_K*pstaple;
+
+  if(cabs(staple)>MIN_VALUE)
+    {
+    new_lambda=conj(old_lambda)*conj(staple)/cabs(staple)*conj(staple)/cabs(staple);
+
+    #ifdef DEBUG
+    double old_energy, new_energy;
+
+    old_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(old_lambda) );
+    old_energy-=2.0*param->d_K*creal(old_lambda*pstaple);
+    old_energy-= param->d_masssq * creal(old_lambda);
+
+    new_energy=-2.0*(double)NFLAVOUR*(param->d_J)*creal(sc*chargepow(new_lambda) );
+    new_energy-=2.0*param->d_K*creal(new_lambda*pstaple);
+    new_energy-= param->d_masssq * creal(new_lambda);
+
+    //printf("old_energy-new_energy=%g\n", old_energy-new_energy);
+    if(fabs(old_energy-new_energy)>1.0e-10 )
+      {
+      fprintf(stderr, "Problem in energy in overrelaxation for link (%s, %d)\n", __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+      }
+    #endif
+
+    GC->lambda[r][i]=new_lambda;
+    }
+
+  (void) old_lambda; // just to evoid warning
+  }
+
+
+
+
 // perform a complete update
 void update(Conf * GC,
             Geometry const * const geo,
@@ -484,6 +561,19 @@ void update(Conf * GC,
          overrelaxation_for_phi(GC, geo, r);
          }
       }
+
+   #if CHARGE ==1
+   for(j=0; j<param->d_overrelax; j++)
+      {
+      for(r=0; r<(param->d_volume); r++)
+         {
+         for(dir=0; dir<STDIM; dir++)
+            {
+            overrelaxation_for_link(GC, geo, param, r, dir);
+            }
+         }
+      }
+   #endif
 
    // final unitarization
    for(r=0; r<(param->d_volume); r++)
